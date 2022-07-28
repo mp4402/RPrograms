@@ -28,3 +28,33 @@ summary(modelo2)
 
 modelo00 <- lm(salary ~ 1, data = Salaries)
 summary(modelo00)
+
+
+modelo3 <- lm(salary ~ rank,data =Salaries)
+summary(modelo3)
+
+salarios2 <- modelo3$coefficients
+salarios2 <- as.data.frame(salarios2)
+salarios2$tenure <- c("Aistente", "Asociado", "Profesor")
+salarios2[2,1] = salarios2[1,1] + salarios2[2,1]
+salarios2[3,1] = salarios2[1,1] + salarios2[3,1]
+ggplot(salarios2, aes(tenure, salarios2)) + geom_bar(stat = "identity")
+
+modelo4 <- lm(salary ~ rank + sex, data = Salaries)
+summary(modelo4)
+
+modelo5 <- lm(salary ~ yrs.service, data = Salaries)
+summary(modelo5)
+
+ggplot(data = Salaries, aes(yrs.service, salary)) + geom_point() + geom_smooth()
+
+modelo6 <- lm(salary ~ rank + yrs.service, data = Salaries)
+summary(modelo6)
+
+library(HH)
+ancova(salary ~ rank + yrs.service, data = Salaries)
+
+modelo7 <- lm(salary ~ sex + yrs.service + sex*yrs.service, data = Salaries)
+summary(modelo7)
+
+ggplot(data ~ Salaries, aes(yrs.service, salary, color = sex)) + geom_point() + geom_smooth(method="lm", se=FALSE)
