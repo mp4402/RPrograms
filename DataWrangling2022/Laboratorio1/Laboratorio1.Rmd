@@ -1,0 +1,106 @@
+---
+title: "Laboratorio1"
+author: "MarioPisquiy"
+date: "2022-08-03"
+output: rmarkdown::github_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(readr)
+```
+## Ejercicio 1
+
+### Lectura de archivos
+
+
+```{r cars}
+doc1 <- read_excel("01-2018.xlsx")
+doc2 <- read_excel("02-2018.xlsx")
+doc3 <- read_excel("03-2018.xlsx")
+doc4 <- read_excel("04-2018.xlsx")
+doc5 <- read_excel("05-2018.xlsx")
+doc6 <- read_excel("06-2018.xlsx")
+doc7 <- read_excel("07-2018.xlsx")
+doc8 <- read_excel("08-2018.xlsx")
+doc9 <- read_excel("09-2018.xlsx")
+doc10 <- read_excel("10-2018.xlsx")
+doc11 <- read_excel("11-2018.xlsx")
+```
+
+### Limpieza de archivos e ingreso de fechas
+
+
+```{r pressure, echo=FALSE}
+doc7 <- doc7[1:8]
+doc8 <- doc8[1:8]
+doc9 <- doc9[1:8]
+doc10 <- doc10[1:8]
+doc11 <- doc11[1:8]
+
+doc1$FECHA <- rep("01-2018",length(doc1$COD_VIAJE))
+doc2$FECHA <- rep("02-2018",length(doc2$COD_VIAJE))
+doc3$FECHA <- rep("03-2018",length(doc3$COD_VIAJE))
+doc4$FECHA <- rep("04-2018",length(doc4$COD_VIAJE))
+doc5$FECHA <- rep("05-2018",length(doc5$COD_VIAJE))
+doc6$FECHA <- rep("06-2018",length(doc6$COD_VIAJE))
+doc7$FECHA <- rep("07-2018",length(doc7$COD_VIAJE))
+doc8$FECHA <- rep("08-2018",length(doc8$COD_VIAJE))
+doc9$FECHA <- rep("09-2018",length(doc9$COD_VIAJE))
+doc10$FECHA <- rep("10-2018",length(doc10$COD_VIAJE))
+doc11$FECHA <- rep("11-2018",length(doc11$COD_VIAJE))
+```
+
+### Se crea la tabla con la data junta
+
+```{r}
+tablaFinal <- rbind(doc1,doc2,doc3,doc4,doc5,doc6,doc7,doc8,doc9,doc10,doc11)
+```
+
+El resultado es una tabla de 9 columnas y 2180 filas
+
+```{r}
+head(tablaFinal)
+```
+
+
+## Ejercicio 2
+
+### Se generan vectores dentro de una lista, su largo es variable entre 20 y 30 
+```{r}
+generate_dff <- function(x,size){ return(
+  data.frame(b = sample(1:10, size = size, replace = TRUE)
+  ))
+}
+
+lista <- lapply(1:3, generate_dff, size = sample(20:30, 1))
+```
+
+### Las listas generadas
+```{r}
+lista[[1]][['b']]
+lista[[2]][['b']]
+lista[[3]][['b']]
+```
+
+### Se encuentra la moda de cada lista
+```{r}
+moda <- function(x) {
+  return(as.numeric(names(which.max(table(x)))))
+}
+
+resultado <- lapply(lista,moda)
+
+resultado[[1]]
+resultado[[2]]
+resultado[[3]]
+```
+
+## Ejercicio 3
+
+### Lectura del archivo usando "|" como delimitador
+```{r}
+parqueVehicular <- read_delim("INE_PARQUE_VEHICULAR_080219.txt",delim = "|")
+head(parqueVehicular)
+```
+
