@@ -16,6 +16,9 @@ library(knitr)
 
 ```{r cargarData, include=FALSE}
 data <- read_csv("tienda.csv")
+names(data)[c(1,2,3,4,5,6,7,12,14,17)] <- c("row_id","order_id","order_date","ship_date","ship_mode","customer_id","customer_name","postal_code","product_id","product_name")
+names(data)[1-21] <- tolower(names(data)[1-21])
+names(data)
 ```
 
 
@@ -25,6 +28,14 @@ Col 1
 ```{r mostrarData, include=FALSE}
 #Encontrar como hacer scroll
 kable(data %>% sample_n(50))
+```
+
+
+```{r}
+data %>%
+  select(product_name,profit)%>%
+  group_by(product_name) %>%
+  summarise(profit = sum(profit))
 ```
 
 
