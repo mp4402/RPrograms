@@ -1,0 +1,37 @@
+---
+title: "Tab en columnas"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r Librerias, include=FALSE}
+library(flexdashboard)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(knitr)
+```
+
+```{r cargarData, include=FALSE}
+data <- read_csv("tienda.csv")
+```
+
+
+Col 1
+-----------------------
+
+```{r mostrarData, include=FALSE}
+#Encontrar como hacer scroll
+kable(data %>% sample_n(50))
+```
+
+
+Col 2 {.tabset}
+-----------------------
+
+### Tab 1
+
+
+### Tab 2
