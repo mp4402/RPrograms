@@ -30,8 +30,19 @@ Col 1
 kable(data %>% sample_n(50))
 ```
 
+Col 2 {.tabset}
+-----------------------
 
-```{r}
+### Tab 1
+
+```{r masRentable}
+data %>%
+  select(product_name,profit)%>%
+  group_by(product_name) %>%
+  summarise(profit = sum(profit))
+```
+
+```{r menosRentable}
 data %>%
   select(product_name,profit)%>%
   group_by(product_name) %>%
@@ -39,10 +50,17 @@ data %>%
 ```
 
 
-Col 2 {.tabset}
------------------------
-
-### Tab 1
-
 
 ### Tab 2
+
+
+### Tab 3
+```{r geografico}
+data %>%
+  select(state, profit)%>%
+  group_by(state) %>%
+  summarise(profit = sum(profit))
+```
+
+
+### Tab 4
