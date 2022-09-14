@@ -16,11 +16,6 @@ shinyUI(fluidPage(
                         brush = 'mbrush' ),
              verbatimTextOutput("click_data"),
              tableOutput("mtcars_tbl")
-    ),
-    tabPanel("Plot",
-             h1("Graficas en Shiny"),
-             plotOutput("grafica_base_r")
-    )
-    
+    ) 
   )
 ))
