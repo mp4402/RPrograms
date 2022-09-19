@@ -119,6 +119,38 @@ territorios cuyas pérdidas sean “considerables”. Bajo su criterio,
 
 Extra
 
+    ## [1] "El total posible de examenes es: 252"
+
 ## A
 
+    ## # A tibble: 7 x 3
+    ##   cliente  cantidadMarcas ventas
+    ##   <chr>             <int>  <dbl>
+    ## 1 a17a7558             10 19818.
+    ## 2 ff122c3f             10 15359.
+    ## 3 c53868a0              9 13813.
+    ## 4 044118d4              9  9436.
+    ## 5 f676043b              8  3635.
+    ## 6 f2aab44e              3   400.
+    ## 7 bf1e94e9             12     0
+
+    ## [1] "El cliente más rentable es a17a7558, porque es quien más gasta en nosotros ($19,817.70) y es de los que más marcas maneja (10)"
+
 ## B
+
+    ## # A tibble: 104 x 3
+    ##    territorio cantidadMarcas ventas
+    ##    <chr>               <int>  <dbl>
+    ##  1 e6fd9da9                1   18.2
+    ##  2 13b223c9                1   49.9
+    ##  3 368301e2                2  121. 
+    ##  4 79428560                1  132  
+    ##  5 e034e3c8                4  247. 
+    ##  6 0bfe69a0                5  384. 
+    ##  7 456278b8                4  493. 
+    ##  8 4163fa3f                4  580. 
+    ##  9 3e0d75d0                3  647. 
+    ## 10 aed8e579                5  747. 
+    ## # ... with 94 more rows
+
+    ## [1] "Los territorios menos rentables son: e6fd9da9, 13b223c9, 368301e2, 79428560, e034e3c8; Tienen las ventas más bajas, en un rango entre $18.16 y $247.16, y que además manejan la menor cantidad de marcas, 3 territorios con 1, una con 2 y la otra con 4"

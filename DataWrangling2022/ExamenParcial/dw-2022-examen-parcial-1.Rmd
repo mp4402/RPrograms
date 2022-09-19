@@ -93,8 +93,8 @@ Extra
 respuesta <- factorial(10) / (factorial(5)*factorial(10-5))
 ```
 
-```{r}
-respuesta <- paste("El total posible de examenes es: ", tolower(respuesta), sep="")
+```{r echo = FALSE}
+respuesta <- paste("El total posible de examenes es: ", toString(respuesta), sep="")
 respuesta
 ```
 
@@ -111,7 +111,7 @@ names(parcial_anonimo) <- tolower(names(parcial_anonimo))
 ```
 
 
-```{r include = FALSE}
+```{r echo = FALSE}
 ###resuelva acá
 
 clientes <- parcial_anonimo %>%
@@ -127,17 +127,16 @@ parcial_anonimo %>%
   summarise(cantidadMarcas = n_distinct(marca), ventas = sum(venta)) %>%
   arrange(desc(ventas))
 
-```
-
-```{r}
 respuesta <- "El cliente más rentable es a17a7558, porque es quien más gasta en nosotros ($19,817.70) y es de los que más marcas maneja (10)"
 respuesta
+
 ```
+
 
 
 ## B
 
-```{r include = FALSE}
+```{r echo = FALSE}
 
 parcial_anonimo %>%
   select(territorio,venta,marca) %>%
@@ -145,10 +144,8 @@ parcial_anonimo %>%
   summarise(cantidadMarcas = n_distinct(marca),ventas = sum(venta)) %>%
   arrange(ventas)
 
-```
-
-```{r}
 respuesta <- "Los territorios menos rentables son: e6fd9da9, 13b223c9, 368301e2, 79428560, e034e3c8; Tienen las ventas más bajas, en un rango entre $18.16 y $247.16, y que además manejan la menor cantidad de marcas, 3 territorios con 1, una con 2 y la otra con 4"
 respuesta
+
 ```
 
