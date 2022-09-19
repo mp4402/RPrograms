@@ -46,10 +46,8 @@ Preguntas a responder: 3, 4, 8, 9, 10
     
 2. Al momento de filtrar en SQL, ¿cuál keyword cumple las mismas funciones que el keyword `OR`  para filtrar uno o más elementos una misma columna?
 3. ¿Por qué en R utilizamos funciones de la familia apply (lapply,vapply) en lugar de utilizar ciclos?
-Porque 
 
 4. ¿Cuál es la diferencia entre utilizar `==` y `=` en R?
-El '==' es utilizado para comparación, por ejemplo en un if. Mientras que '=' es utilizado para asignar valores a una variable, objeto, etc.
 
 5. ¿Cuál es la forma correcta de cargar un archivo de texto donde el delimitador es `:`?
 6. ¿Qué es un vector y en qué se diferencia en una lista en R?
@@ -57,10 +55,8 @@ El '==' es utilizado para comparación, por ejemplo en un if. Mientras que '=' e
 8. Si en un dataframe, a una variable de tipo `factor` le agrego un nuevo elemento que *no se encuentra en los niveles existentes*, ¿cuál sería el resultado esperado y por qué?
     * El nuevo elemento
     * `NA`
-
     
 9. En SQL, ¿para qué utilizamos el keyword `HAVING`?
-Se utiliza having para filtrar data agrupada, porque where solo puede filtrar filas normales no agrupadas
 
 10. Si quiero obtener como resultado las filas de la tabla A que no se encuentran en la tabla B, ¿cómo debería de completar la siguiente sentencia de SQL?
 
@@ -80,29 +76,79 @@ A. De los clientes que están en más de un país,¿cuál cree que es el más re
 B. Estrategia de negocio ha decidido que ya no operará en aquellos territorios cuyas pérdidas sean "considerables". Bajo su criterio, ¿cuáles son estos territorios y por qué ya no debemos operar ahí?
 
 
-
-
-
-
-
-
 ### I. Preguntas teóricas
+
+3. Porque el orden de las iteraciones no importa, así como exige tener un mejor código
+
+4. El '==' es utilizado para comparación, por ejemplo en un if. Mientras que '=' es utilizado para asignar valores a una variable, objeto, etc.
+
+8. NA, porque dicho valor únicamente está puesto en una columna de tipo factor, pero dicho valor no está reconocido como uno de tipo factor para R, por lo que no puede devolver nada
+
+9. Se utiliza having para filtrar data agrupada, porque where solo puede filtrar filas normales no agrupadas
+
+10. SELECT * FROM A LEFT JOIN B ON A.KEY = B.KEY WHERE B.KEY IS NULL
+
+Extra
+```{r include = FALSE}
+respuesta <- factorial(10) / (factorial(5)*factorial(10-5))
+```
+
+```{r}
+respuesta <- paste("El total posible de examenes es: ", tolower(respuesta), sep="")
+respuesta
+```
 
 
 ## A
 
-```{r }
-###resuelva acá
+```{r include = FALSE}
+library(dplyr)
+library(stringr)
+
+parcial_anonimo <- readRDS("parcial_anonimo.rds")
+names(parcial_anonimo) <- tolower(names(parcial_anonimo))
 
 ```
 
 
+```{r include = FALSE}
+###resuelva acá
+
+clientes <- parcial_anonimo %>%
+            select(cliente,pais) %>%
+            group_by(cliente) %>%
+            summarise(n = n_distinct(pais)) %>%
+            filter(n >1)
+
+parcial_anonimo %>%
+  select(cliente,marca,venta) %>%
+  group_by(cliente) %>%
+  filter(cliente %in% clientes$cliente) %>%
+  summarise(cantidadMarcas = n_distinct(marca), ventas = sum(venta)) %>%
+  arrange(desc(ventas))
+
+```
+
+```{r}
+respuesta <- "El cliente más rentable es a17a7558, porque es quien más gasta en nosotros ($19,817.70) y es de los que más marcas maneja (10)"
+respuesta
+```
 
 
 ## B
 
-```{r }
-###resuelva acá
+```{r include = FALSE}
 
+parcial_anonimo %>%
+  select(territorio,venta,marca) %>%
+  group_by(territorio) %>%
+  summarise(cantidadMarcas = n_distinct(marca),ventas = sum(venta)) %>%
+  arrange(ventas)
+
+```
+
+```{r}
+respuesta <- "Los territorios menos rentables son: e6fd9da9, 13b223c9, 368301e2, 79428560, e034e3c8; Tienen las ventas más bajas, en un rango entre $18.16 y $247.16, y que además manejan la menor cantidad de marcas, 3 territorios con 1, una con 2 y la otra con 4"
+respuesta
 ```
 
