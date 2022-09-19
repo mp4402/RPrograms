@@ -1,10 +1,11 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
+library(DT)
 
-shinyServer(function(input, output) {
-  
+shinyServer(function(input, output, session) {
   posicionHover <<- reactiveVal()
+  antiguaPosicionHover <<- reactiveVal()
   puntosHover <<- reactiveValues()
   puntoHover <<- reactiveVal()
   posicion <<- reactiveVal()
@@ -37,10 +38,12 @@ shinyServer(function(input, output) {
                        " doble click coordenada y= ", round(input$dclk$y,2))
       indice <- nearPoints(mtcars,input$dclk,xvar='wt',yvar='mpg')
       if(nrow(indice) != 0){
+        # browser()
         posicion <- toString(indice$wt-indice$mpg)
+        # browser()
         puntos[[posicion]] <- NULL
-        posicionHover <- toString(indice$wt-indice$mpg)
-        puntosHover[[posicionHover]] <- NULL
+        # browser()
+        puntosHover[[posicion]] <- NULL
       }
     }
     if(!is.null(input$mhover$x) ){
@@ -48,8 +51,7 @@ shinyServer(function(input, output) {
                          " hover coordenada y= ", round(input$mhover$y,2))
       indice <- nearPoints(mtcars,input$mhover,xvar='wt',yvar='mpg')
       if(nrow(indice) != 0){
-        posicionHover <- toString(indice$wt-indice$mpg)
-        puntosHover[[posicionHover]] <- indice
+        puntosHover[[toString(1)]] <- indice
       }
     }
     if(!is.null(input$mbrush$xmin)){
@@ -58,13 +60,18 @@ shinyServer(function(input, output) {
       mbrush_msg <- cat('\t rango en x: ', brushx,'\n','\t rango en y: ', brushy)
       
       indice <- brushedPoints(mtcars,input$mbrush,xvar='wt',yvar='mpg')
+      # browser()
       if(nrow(indice) != 0){
-        posicion <- toString(indice$wt-indice$mpg)
-        puntos[[posicion]] <- indice
+        lapply(1:length(indice[,1]),añadidoPuntosBrushed,lista=indice)
+        
+        añadidoPuntosBrushed <- function(x,lista){
+          posicion <- toString(lista[x,]$wt-lista[x,]$mpg)
+          puntos[[posicion]] <- lista[x,]
+        }
       }
     }
     
-    
+   
     
     
     cat(clk_msg,dclk_msg,mhover_msg,mbrush_msg,sep = '\n')
@@ -82,7 +89,7 @@ shinyServer(function(input, output) {
       NULL
     }
     
-    if (nrow(df2) != 0){
+    if(nrow(df2)!=0){
       df2
     } else {
       NULL

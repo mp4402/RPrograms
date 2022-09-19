@@ -1,8 +1,8 @@
 ---
-title: "Tab en columnas"
+title: "Store Data and Analysis"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
+    orientation: row
     vertical_layout: fill
 ---
 
@@ -13,6 +13,13 @@ library(ggplot2)
 library(readr)
 library(knitr)
 library(DT)
+library(formattable)
+library(ggplot2)
+library(plotly)
+library(highcharter)
+library(usmap)
+library(crosstalk)
+library(plotly)
 ```
 
 ```{r cargarData, include=FALSE}
@@ -23,52 +30,371 @@ names(data) <- tolower(names(data))
 ```
 
 
-Col 1
------------------------
+# Data {data-icon='fa-database'}
 
+row
+------------------------
+
+### Data
 ```{r mostrarData}
 #Encontrar como hacer scroll
 knitr::kable(data %>% sample_n(50))
 ```
 
-Col 2 {.tabset}
+# Proftability {data-icon='fa-money'}
+
+
+row
 -----------------------
 
-### Tab 1
 
+### masRentable
 ```{r masRentable}
-dfMayor <- data %>% 
-            select(product_name,profit)%>%
-            group_by(product_name) %>%
-            summarise(profit = sum(profit))
+masRentable <- data %>%
+                select(product_name, profit) %>%
+                group_by(product_name) %>%
+                summarise(total = sum(profit)) %>%
+                arrange(desc(total)) %>%
+                head(1)
+masRentable$total <- comma(masRentable$total,digits=0)
 
-dfMayor %>%
-  filter(profit == max(dfMayor$profit))
-
+valueBox(value = paste("$",toString(round(masRentable$total,2))),
+         caption=masRentable$product_name,
+         icon='fa-level-up',
+         color='success')
 ```
 
+
+### menosRentable
 ```{r menosRentable}
-dfMenor <- data %>% 
-            select(product_name,profit)%>%
-            group_by(product_name) %>%
-            summarise(profit = sum(profit))
+menosRentable <- data %>%
+                  select(product_name, profit) %>%
+                  group_by(product_name) %>%
+                  summarise(total = sum(profit)) %>%
+                  arrange(total) %>%
+                  head(1)
 
-dfMenor %>%
-  filter(profit == min(dfMenor$profit))
+menosRentable$total <- comma(menosRentable$total,digits=0)
+valueBox(value = paste("$",toString(round(menosRentable$total,2))),
+         caption=menosRentable$product_name,
+         icon='fa-level-down',
+         color='danger')
 ```
 
 
+row
+-----------------------
 
-### Tab 2
-
-
-### Tab 3
-```{r geografico}
+###
+```{r estadosRentables}
 data %>%
-  select(state, profit)%>%
+  select(state, profit) %>%
   group_by(state) %>%
-  summarise(profit = sum(profit))
+  summarise(total = sum(profit)) %>%
+  arrange(desc(total))%>%
+  head(5)%>%
+  ggplot(aes(x = state,y=total))+
+  geom_col(position='dodge')+
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5,hjust=1))+
+  ggtitle(label = "The 5 most profitable states")
+```
+
+###
+
+```{r estadosMenosRentables}
+data %>%
+  select(state, profit) %>%
+  group_by(state) %>%
+  summarise(total = sum(profit)) %>%
+  arrange(total)%>%
+  head(5)%>%
+  ggplot(aes(x = state,y=total))+
+  geom_col(position='dodge')+
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5,hjust=1))+
+  ggtitle(label = "The 5 less profitable states")
 ```
 
 
-### Tab 4
+
+# Segments {data-icon='fa-tags'}
+
+row
+--------------------------
+
+### Consumer % of sells
+
+```{r}
+segmentConsumer <- data %>%
+                    select(segment, profit, quantity) %>%
+                    filter(segment == 'Consumer') %>%
+                    group_by(segment) %>%
+                    summarise(total = sum(profit),cantidad = n()) %>%
+                    mutate(ratio = (cantidad*100)/9994)
+
+segmentConsumer$ratio <- round(segmentConsumer$ratio,2)
+gauge(segmentConsumer$ratio,min=0,max=100,symbol='%',
+      gaugeSectors(success=c(80,100),
+                   warning = c(40,79),
+                   danger =c(0,39)))
+
+```
+
+###
+
+```{r}
+
+segmentConsumer$total <- comma(segmentConsumer$total,digits=0)
+valueBox(value = paste("$",toString(round(segmentConsumer$total,2))),
+         caption="Total Vendido",
+         icon='fa-shopping-cart',
+         color='success')
+
+```
+
+row
+---------------------------
+
+### Corporate % of sells
+
+```{r}
+segmentCorporate <- data %>%
+                    select(segment, profit, quantity) %>%
+                    filter(segment == 'Corporate') %>%
+                    group_by(segment) %>%
+                    summarise(total = sum(profit),cantidad = n()) %>%
+                    mutate(ratio = (cantidad*100)/9994)
+
+segmentCorporate$ratio <- round(segmentCorporate$ratio,2)
+gauge(segmentCorporate$ratio,min=0,max=100,symbol='%',
+      gaugeSectors(success=c(80,100),
+                   warning = c(40,79),
+                   danger =c(0,39)))
+
+```
+
+###
+
+```{r}
+
+segmentCorporate$total <- comma(segmentCorporate$total,digits=0)
+valueBox(value = paste("$",toString(round(segmentCorporate$total,2))),
+         caption="Total Vendido",
+         icon='fa-shopping-cart',
+         color='success')
+
+
+```
+
+row 
+-----------------------------
+
+### Home Office % of sells
+
+```{r}
+segmentHomeOffice <- data %>%
+                      select(segment, profit, quantity) %>%
+                      filter(segment == 'Home Office') %>%
+                      group_by(segment) %>%
+                      summarise(total = sum(profit),cantidad = n()) %>%
+                      mutate(ratio = (cantidad*100)/9994)
+
+segmentHomeOffice$ratio <- round(segmentHomeOffice$ratio,2)
+gauge(segmentHomeOffice$ratio,min=0,max=100,symbol='%',
+      gaugeSectors(success=c(80,100),
+                   warning = c(40,79),
+                   danger =c(0,39)))
+
+```
+
+
+###
+
+```{r}
+
+segmentHomeOffice$total <- comma(segmentHomeOffice$total,digits=0)
+valueBox(value = paste("$",toString(round(segmentHomeOffice$total,2))),
+         caption="Total Vendido",
+         icon='fa-shopping-cart',
+         color='success')
+
+```
+
+
+# Geographical {data-icon='fa-map-marker'}
+
+```{r geografico}
+estadosGanancias <- data %>%
+                    select(state, profit)%>%
+                    group_by(state) %>%
+                    summarise(profit = sum(profit))
+
+d   <- usmapdata::centroid_labels("states")
+colnames(d)[5] <- "state"
+d <- d[c(-2,-12),]
+
+data_labels <- merge(d, estadosGanancias, by = "state")
+
+plot_usmap(data = estadosGanancias, values = "profit", color = "white", labels = FALSE) +
+  guides(fill = "none") +
+  geom_text(data = data_labels, ggplot2::aes(
+    x = x, y = y,
+    label = scales::number(estadosGanancias$profit, scale = 1e-2, accuracy = 1)
+  ), color = "white")+
+  labs(title="Profit by state, in $K")
+
+```
+
+
+# Shipments {data-icon='fa-truck'}
+
+
+<!-- row  -->
+<!-- ------------------- -->
+
+<!-- ### Standard Class % of total ships -->
+
+<!-- ```{r} -->
+
+<!-- standardClass <- data %>% -->
+<!--                   select(ship_mode, row_id) %>% -->
+<!--                   filter(ship_mode == "Standard Class") %>% -->
+<!--                   group_by(ship_mode) %>% -->
+<!--                   summarise(cantidad = n()) %>% -->
+<!--                   arrange(desc(cantidad)) %>% -->
+<!--                   mutate(ratio = (cantidad*100)/9994) -->
+
+<!-- standardClass$ratio <- round(standardClass$ratio,2) -->
+<!-- gauge(standardClass$ratio,min=0,max=100,symbol='%', -->
+<!--       gaugeSectors(success=c(80,100), -->
+<!--                    warning = c(40,79), -->
+<!--                    danger =c(0,39))) -->
+
+<!-- ``` -->
+
+<!-- ### Second Class % of total ships -->
+
+<!-- ```{r} -->
+
+<!-- secondClass <- data %>% -->
+<!--                 select(ship_mode, row_id) %>% -->
+<!--                 filter(ship_mode == "Second Class") %>% -->
+<!--                 group_by(ship_mode) %>% -->
+<!--                 summarise(cantidad = n()) %>% -->
+<!--                 arrange(desc(cantidad)) %>% -->
+<!--                 mutate(ratio = (cantidad*100)/9994) -->
+
+<!-- secondClass$ratio <- round(secondClass$ratio,2) -->
+<!-- gauge(secondClass$ratio,min=0,max=100,symbol='%', -->
+<!--       gaugeSectors(success=c(80,100), -->
+<!--                    warning = c(40,79), -->
+<!--                    danger =c(0,39))) -->
+
+<!-- ``` -->
+
+
+<!-- ### First Class % of total ships -->
+
+<!-- ```{r} -->
+
+<!-- firstClass <- data %>% -->
+<!--                 select(ship_mode, row_id) %>% -->
+<!--                 filter(ship_mode == "First Class") %>% -->
+<!--                 group_by(ship_mode) %>% -->
+<!--                 summarise(cantidad = n()) %>% -->
+<!--                 arrange(desc(cantidad)) %>% -->
+<!--                 mutate(ratio = (cantidad*100)/9994) -->
+
+<!-- firstClass$ratio <- round(firstClass$ratio,2) -->
+<!-- gauge(firstClass$ratio,min=0,max=100,symbol='%', -->
+<!--       gaugeSectors(success=c(80,100), -->
+<!--                    warning = c(40,79), -->
+<!--                    danger =c(0,39))) -->
+
+<!-- ``` -->
+
+
+<!-- row -->
+<!-- --------------------- -->
+
+<!-- ### -->
+
+<!-- ### Same Day % of total ships -->
+
+<!-- ```{r} -->
+
+<!-- sameDay <- data %>% -->
+<!--             select(ship_mode, row_id) %>% -->
+<!--             filter(ship_mode == "Same Day") %>% -->
+<!--             group_by(ship_mode) %>% -->
+<!--             summarise(cantidad = n()) %>% -->
+<!--             arrange(desc(cantidad)) %>% -->
+<!--             mutate(ratio = (cantidad*100)/9994) -->
+
+<!-- sameDay$ratio <- round(sameDay$ratio,2) -->
+<!-- gauge(sameDay$ratio,min=0,max=100,symbol='%', -->
+<!--       gaugeSectors(success=c(80,100), -->
+<!--                    warning = c(40,79), -->
+<!--                    danger =c(0,39))) -->
+
+<!-- ``` -->
+
+
+<!-- ### -->
+
+row
+----------------------
+
+###
+
+```{r}
+data %>%
+  select(region, row_id) %>%
+  group_by(region) %>%
+  summarise(quantity = n()) %>%
+  arrange(desc(quantity)) %>%
+  hchart("column",hcaes(x = region, y = quantity)) %>%
+  hc_title(text="<b>Regions ordered by no of shipments")
+
+```
+
+
+row
+---------------------------------
+
+###
+
+```{r}
+
+sd <- data %>%
+      select(segment, ship_mode, row_id) %>%
+      group_by(segment, ship_mode) %>%
+      summarise(cantidad_envios = n()) %>%
+      SharedData$new()
+
+fig <- sd %>%
+  plotly::plot_ly(x= ~ship_mode, 
+                  y = ~cantidad_envios,
+                  name = "prueba", 
+                  type="bar",
+                  hoverinfo = "text",
+                  text = ~paste("Segment: ", segment,
+                                "No.: ", cantidad_envios)
+                  ) %>%
+  layout(xaxis = list(title = "Ship Mode"),
+         yaxis = list(title = "Number of shipments"))
+
+
+
+bscols(widths = c(3,9),
+       list(
+         crosstalk::filter_select(id = "select_filter", 
+                                  label = "Segments",
+                                  sharedData = sd,
+                                  group = ~segment)
+       ),fig
+       )
+
+
+```
+
+

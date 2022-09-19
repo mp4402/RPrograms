@@ -1,0 +1,51 @@
+---
+title: Fiji earthquakes
+output: html_document
+---
+
+```{r}
+library(crosstalk)
+library(leaflet)
+library(DT)
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+options(dplyr.summarise.inform = FALSE)
+
+sd <- data %>%
+      select(segment, ship_mode, row_id) %>%
+      group_by(segment, ship_mode) %>%
+      summarise(cantidad_envios = n()) %>%
+      SharedData$new()
+
+fig <- sd %>%
+  plotly::plot_ly(x= ~ship_mode, 
+                  y = ~cantidad_envios,
+                  name = "prueba", 
+                  type="bar",
+                  hoverinfo = "text",
+                  text = ~paste("Segment: ", segment,
+                                "No.: ", cantidad_envios)
+                  ) %>%
+  layout(xaxis = list(title = "Ship Mode"),
+         yaxis = list(title = "Number of shipments"))
+
+
+
+bscols(widths = c(3,9),
+       list(
+         crosstalk::filter_select(id = "select_filter", 
+                                  label = "Segments",
+                                  sharedData = sd,
+                                  group = ~segment)
+       ),fig
+       )
+
+```
+
+
+```{r}
+
+```
+
