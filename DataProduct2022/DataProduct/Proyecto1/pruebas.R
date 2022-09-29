@@ -1,5 +1,7 @@
 library(readr)
 library(dplyr)
+library(ggplot2)
+library(ggmap)
 
 tienda <- read_csv("tienda.csv")
 
@@ -116,3 +118,12 @@ data %>%
   select(segment,ship_mode,row_id)%>%
   group_by(segment,ship_mode) %>%
   summarise(cantidad_envios = n())
+
+estados <- data %>%
+      select(state,quantity,profit)%>%
+      group_by(state)%>%
+      summarise(total_profit = sum(profit),quantity_sales = n())
+
+estados <- as.data.frame(estados)      
+estados <- mutate_geocode(estados,state)
+

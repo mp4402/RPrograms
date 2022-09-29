@@ -4,12 +4,19 @@ output: html_document
 ---
 
 ```{r}
+
 library(crosstalk)
 library(leaflet)
 library(DT)
 library(dplyr)
 library(ggplot2)
 library(plotly)
+library(usmap)
+
+```
+
+
+```{r}
 
 options(dplyr.summarise.inform = FALSE)
 
@@ -46,6 +53,35 @@ bscols(widths = c(3,9),
 
 
 ```{r}
+d   <- usmapdata::centroid_labels("states")
+colnames(d)[5] <- "state"
+d <- d[c(-2,-12),]
+
+estadosGanancias <- data %>%
+                    select(state, profit)%>%
+                    group_by(state) %>%
+                     summarise(profit = sum(profit))%>%
+                    # merge(d, estadosGanancias, by = "state") #%>%
+                    SharedData$new()
+
+fig <- estadosGanancias%>%
+  plot_usmap(data = estadosGanancias, values = "profit", color = "white", labels = FALSE) +
+  guides(fill = "none") +
+  geom_text(data = data_labels, ggplot2::aes(
+    x = x, y = y,
+    label = scales::number(estadosGanancias$profit, scale = 1e-2, accuracy = 1)
+  ), color = "white")+
+  labs(title="Profit by state, in $K")
+
+bscols(widths = c(3,9),
+       list(
+         crosstalk::filter_select(id = "select_filter", 
+                                  label = "State",
+                                  sharedData = estadosGanancias,
+                                  group = ~state)
+       ),fig
+       )
+
 
 ```
 

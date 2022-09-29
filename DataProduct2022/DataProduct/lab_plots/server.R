@@ -3,14 +3,11 @@ library(ggplot2)
 library(dplyr)
 library(DT)
 
+puntosHover <<- reactiveValues()
+posicion <<- reactiveVal()
+puntos <<- reactiveValues()
+
 shinyServer(function(input, output, session) {
-  posicionHover <<- reactiveVal()
-  antiguaPosicionHover <<- reactiveVal()
-  puntosHover <<- reactiveValues()
-  puntoHover <<- reactiveVal()
-  posicion <<- reactiveVal()
-  puntos <<- reactiveValues()
-  punto <<- reactiveVal()
   
   output$grafica_base_r <- renderPlot({
     plot(mtcars$wt,mtcars$mpg, xlab = "wt", ylab="millas por galon")
@@ -38,12 +35,8 @@ shinyServer(function(input, output, session) {
                        " doble click coordenada y= ", round(input$dclk$y,2))
       indice <- nearPoints(mtcars,input$dclk,xvar='wt',yvar='mpg')
       if(nrow(indice) != 0){
-        # browser()
         posicion <- toString(indice$wt-indice$mpg)
-        # browser()
         puntos[[posicion]] <- NULL
-        # browser()
-        puntosHover[[posicion]] <- NULL
       }
     }
     if(!is.null(input$mhover$x) ){
@@ -51,7 +44,13 @@ shinyServer(function(input, output, session) {
                          " hover coordenada y= ", round(input$mhover$y,2))
       indice <- nearPoints(mtcars,input$mhover,xvar='wt',yvar='mpg')
       if(nrow(indice) != 0){
-        puntosHover[[toString(1)]] <- indice
+        if(!is.null(puntos)){
+          if(!is.null(input$dclk$x) ){
+            puntosHover[[toString(1)]] <- NULL 
+          }else{
+            puntosHover[[toString(1)]] <- indice  
+          }
+        }
       }
     }
     if(!is.null(input$mbrush$xmin)){
@@ -60,7 +59,6 @@ shinyServer(function(input, output, session) {
       mbrush_msg <- cat('\t rango en x: ', brushx,'\n','\t rango en y: ', brushy)
       
       indice <- brushedPoints(mtcars,input$mbrush,xvar='wt',yvar='mpg')
-      # browser()
       if(nrow(indice) != 0){
         lapply(1:length(indice[,1]),añadidoPuntosBrushed,lista=indice)
         
@@ -74,26 +72,35 @@ shinyServer(function(input, output, session) {
    
     
     
-    cat(clk_msg,dclk_msg,mhover_msg,mbrush_msg,sep = '\n')
+    #cat(clk_msg,dclk_msg,mhover_msg,mbrush_msg,sep = '\n')
     
   })
   
-  
-  
-  output$mtcars_tbl <- renderTable({
-    df <- nearPoints(mtcars,input$clk,xvar='wt',yvar='mpg')
-    df2 <- brushedPoints(mtcars,input$mbrush,xvar='wt',yvar='mpg')
-    if(nrow(df)!=0){
-      df
-    } else {
-      NULL
+  puntoVerdes <- reactive({
+    lista <<- reactiveValuesToList(puntos)
+    listaa <- data.frame(NULL)
+    
+    
+    if (length(lista)!=0){
+      for (i in 1:length(lista)){
+        listaa <- rbind(listaa, lista[[i]])
+      }
     }
     
-    if(nrow(df2)!=0){
-      df2
-    } else {
-      NULL
-    }
+    
+    
+    return(listaa)
+  })
+  
+  output$mtcars_tbl <- renderTable({
+    puntoVerdes()
+    # df <- brushedPoints(mtcars,input$mbrush,xvar='wt',yvar='mpg')
+    # if(nrow(df)!=0){
+    #   df
+    # } else {
+    #   NULL
+    # }
+    
     
   })
   
