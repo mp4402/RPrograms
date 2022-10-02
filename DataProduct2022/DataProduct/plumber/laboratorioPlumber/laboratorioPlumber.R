@@ -32,17 +32,26 @@ function(id){
   )
 }
 
-#* @get /user/<id:int>
-function(id){
+#* @get /user/<numero:int>
+function(numero){
   list(
-    id = id,
-    type = typeof(id)
+    id = numero,
+    type = typeof(numero)
   )
 }
 
-#* @post /user/activated/<active:bool>
-function(active){
-  if (!active){
-    
-  }
+#* @get /user/<valor:double>
+function(valor){
+  list(
+    id = valor,
+    type = typeof(valor)
+  )
+}
+
+#* @get /user/<respuesta:bool>
+function(respuesta){
+  list(
+    id = respuesta,
+    type = typeof(respuesta)
+  )
 }

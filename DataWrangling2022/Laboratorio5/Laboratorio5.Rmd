@@ -1,3 +1,13 @@
+---
+title: "Laboratorio5"
+author: "MarioPisquiy"
+date: "2022-10-02"
+output: rmarkdown::github_document
+always_allow_html: true
+---
+
+```{r include = FALSE}
+
 library(lubridate)
 library(readxl)
 library(nycflights13)
@@ -5,8 +15,15 @@ library(dplyr)
 library(stringr)
 library(plotly)
 library(highcharter)
+library(knitr)
+webshot::install_phantomjs()
+```
 
-##### Ejercicio 1 ####
+
+## Ejercicio 1
+
+```{r echo = FALSE}
+
 #Variable que guarda el último eclipse
 start_date <- ymd_hms("2017 august 21 18:26:40")
 
@@ -14,7 +31,7 @@ start_date <- ymd_hms("2017 august 21 18:26:40")
 synodic_month <- days(29) + hours(12) + minutes(44) + seconds(3)
 
 #Variable que guarda un saros
-saros <- ymd_hms(synodic_month * 223)
+saros <- synodic_month * 223
 
 #Siguiente eclipse
 for (i in 1: 223)
@@ -26,9 +43,14 @@ for (i in 1: 223)
     next_date <- next_date + synodic_month
   }
 }
+print(paste("La fecha del último eclipse fue:", start_date,"y el siguiente eclipse será:",next_date, sep = " "))
+```
 
 
-##### Ejercicio 2 ####
+## Ejercicio 2
+
+```{r echo = FALSE}
+
 data <- read_excel("data.xlsx")
 colnames(data) <- c("fecha_creacion","hora_creacion","caller_id","cod","email","sms","call","fecha_final","hora_final")
 
@@ -57,7 +79,9 @@ fechas_dis <- fechas_dis[!is.na(fechas_dis$fecha_final),]
 fechas_num <- fechas_num[!is.na(fechas_num$fecha_final),]
 data <- bind_rows(fechas_dis, fechas_num)
 
-data %>%
+options(dplyr.summarise.inform = FALSE)
+
+categoria1 <- data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes,cod)%>%
   filter(cod == '0')%>%
@@ -66,7 +90,7 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+categoria2 <- data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes,cod)%>%
   filter(cod == 'Actualización de Información')%>%
@@ -75,7 +99,7 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+categoria3 <-data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes,cod)%>%
   filter(cod == 'Cancelaciones')%>%
@@ -84,7 +108,7 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+categoria4 <- data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes,cod)%>%
   filter(cod == 'Cobros')%>%
@@ -93,7 +117,7 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+categoria5 <- data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes,cod)%>%
   filter(cod == 'Consultas')%>%
@@ -102,7 +126,7 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+categoria6 <- data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes,cod)%>%
   filter(cod == 'Empresarial')%>%
@@ -111,7 +135,7 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+categoria7 <- data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes,cod)%>%
   filter(cod == 'Otros/Varios')%>%
@@ -120,7 +144,11 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+categorias <- rbind(categoria1,categoria2,categoria3,categoria4,categoria5,categoria6,categoria7)
+categorias <- as.data.frame(categorias)
+knitr::kable(categorias )
+
+dia<-data %>%
   mutate(dia = wday(fecha_creacion))%>%
   select(caller_id,dia)%>%
   group_by(dia)%>%
@@ -128,7 +156,9 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+print(paste("El dia de la semana con mas llamadas es el lunes (",dia$dia,")",sep=""))
+
+mes_ocupado <- data %>%
   mutate(mes = month(fecha_creacion))%>%
   select(caller_id,mes)%>%
   group_by(mes)%>%
@@ -136,77 +166,40 @@ data %>%
   arrange(desc(cantidad)) %>%
   head(1)
 
-data %>%
+print(paste("El mes mas ocupado es:",mes_ocupado$mes,sep=" "))
+
+llamadas_dia <- data %>%
   mutate(dia = day(fecha_creacion)) %>%
   select(caller_id,dia)%>%
   group_by(dia)%>%
-  summarise(cantidad = n())%>%
-  hchart("column",hcaes(x = dia, y = cantidad))
-
-data$hora_creacion <- hours(hour(data$hora_creacion)) + 
-  minutes(minute(data$hora_creacion)) + 
-  seconds(second(data$hora_creacion))
-
-data$hora_final <- hours(hour(data$hora_final)) + 
-  minutes(minute(data$hora_final)) + 
-  seconds(second(data$hora_final))
+  summarise(cantidad = n())
+print("No hay una estacionalidad de llamadas al mes, pero los ultimos dias se suelen recibir menos que el resto del mes")
 
 data <- data%>%
   mutate(duracion_llamada = difftime(hora_final,hora_creacion,units="mins"))
 
-data%>%
+promedio <- data%>%
   select(caller_id,duracion_llamada)%>%
   summarise(promedio = round(mean(duracion_llamada),digits = 0))
 
-data%>%
+print(paste("El promedio de duración de las llamadas es:",promedio$promedio,sep=" "))
+
+frecuencias <- data%>%
   select(caller_id,duracion_llamada)%>%
   group_by(duracion_llamada)%>%
   summarise(cantidad = n())
 
-wday(data$fecha_creacion)
+frecuencias <- as.data.frame(frecuencias)
+knitr::kable(frecuencias)
+
+```
 
 
-fechas_num$hora_creacion <- hours(hour(fechas_num$hora_creacion)) + 
-  minutes(minute(fechas_num$hora_creacion)) + 
-  seconds(second(fechas_num$hora_creacion))
+## Ejercicio 3
 
-fechas_num$hora_final <- hours(hour(fechas_num$hora_final)) + 
-  minutes(minute(fechas_num$hora_final)) + 
-  seconds(second(fechas_num$hora_final))
+```{r echo = FALSE}
 
-fechas_num <- fechas_num%>%
-  mutate(duracion_1 = difftime(hora_final,hora_creacion))
-minute(fechas_num[1,]$duracion)
-
-fechas_num%>%
-  select(caller_id,duracion)%>%
-  summarise(promedio = round(mean(duracion),digits = 0))
-
-fechas_num%>%
-  select(caller_id,duracion)%>%
-  group_by(duracion)%>%
-  summarise(cantidad = n())
-
-prueba <- hms::hms(hours(hour(data[1,]$hora_creacion)) + 
-  minutes(minute(data[1,]$hora_creacion)) + 
-  seconds(second(data[1,]$hora_creacion)))
-
-prueba1 <- hours(hour(data[1,]$hora_final)) + 
-  minutes(minute(data[1,]$hora_final)) + 
-  seconds(second(data[1,]$hora_final))
-
-
-promedio <- ver %>%
-  select(dia,cantidad)%>%
-  group_by(dia)%>%
-  summarise(promedio = mean(cantidad)) %>%
-  arrange(desc(promedio))
-
-
-
-options(dplyr.summarise.inform = FALSE)
-##### Ejercicio 3 ####
-fecha_nacimiento <- ymd(readline(prompt= "Ingrese su fecha de nacimiento: "))
+fecha_nacimiento <- ymd("2002 may 26")
 print(fecha_nacimiento)
 mes <- month(fecha_nacimiento)
 dia <- day(fecha_nacimiento)
@@ -286,7 +279,13 @@ if (mes == 1){
 }
 cat("Su signo zodiacal es: ", signo)
 
-##### Ejercicio 4 ####
+```
+
+
+## Ejercicio 4
+
+```{r echo = FALSE}
+
 vuelos <- flights
 
 vuelos <- vuelos %>%
@@ -309,6 +308,9 @@ vuelos <- vuelos %>%
   filter(!is.na(dep_delay)) %>%
   mutate(total_delay = minutes(dep_delay+arr_delay))
 
-vuelos %>%
-  select(dep_time, dep_time_completo) %>%
-  filter(dep_time == 115)
+data <- as.data.frame(data)
+knitr::kable(data %>% sample_n(50))
+
+```
+
+
