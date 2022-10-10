@@ -1,5 +1,7 @@
 library(plumber)
+install.packages("dplyr")
 library(dplyr)
+install.packages("rpart")
 library(rpart)
 
 #* @apiTitle Modelo del Titanic
