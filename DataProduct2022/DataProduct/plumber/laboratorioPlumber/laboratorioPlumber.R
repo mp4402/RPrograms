@@ -5,7 +5,7 @@ library(rjson)
 
 data <- read.csv("s&p.csv")
 data$Fecha <- dmy(data$Fecha)
-susers <- data.frame(
+users <- data.frame(
   uid=c(12,13),
   username=c("kim", "john")
 )
