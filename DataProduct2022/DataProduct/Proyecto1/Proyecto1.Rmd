@@ -17,15 +17,28 @@ library(formattable)
 library(ggplot2)
 library(plotly)
 library(highcharter)
-library(usmap)
-library(crosstalk)
 library(plotly)
+library(crosstalk)
+library(leaflet)
 ```
 
 ```{r cargarData, include=FALSE}
 data <- read_csv("tienda.csv")
 names(data)[c(1,2,3,4,5,6,7,12,14,17)] <- c("row_id","order_id","order_date","ship_date","ship_mode","customer_id","customer_name","postal_code","product_id","product_name")
 names(data) <- tolower(names(data))
+
+estadosGanancias <- data %>%
+                    select(state, profit,quantity)%>%
+                    group_by(state) %>%
+                    summarise(profit = sum(profit), n = sum(quantity))
+
+d   <- read.csv2("coordenadasEstados.csv")
+d$lat <- as.numeric(d$lat)
+d$lon <- as.numeric(d$lon)
+
+data_plot <- merge(d, estadosGanancias, by = "state")
+
+sd <- SharedData$new(data_plot)
 
 ```
 
@@ -222,124 +235,150 @@ valueBox(value = paste("$",toString(round(segmentHomeOffice$total,2))),
 
 # Geographical {data-icon='fa-map-marker'}
 
-```{r geografico}
-estadosGanancias <- data %>%
-                    select(state, profit)%>%
-                    group_by(state) %>%
-                    summarise(profit = sum(profit))
+<!-- # ```{r geografico} -->
+<!-- # estadosGanancias <- data %>% -->
+<!-- #                     select(state, profit)%>% -->
+<!-- #                     group_by(state) %>% -->
+<!-- #                     summarise(profit = sum(profit)) -->
+<!-- #  -->
+<!-- # d   <- usmapdata::centroid_labels("states") -->
+<!-- # colnames(d)[5] <- "state" -->
+<!-- # d <- d[c(-2,-12),] -->
+<!-- #  -->
+<!-- # data_labels <- merge(d, estadosGanancias, by = "state") -->
+<!-- #  -->
+<!-- # plot_usmap(data = estadosGanancias, values = "profit", color = "white", labels = FALSE) + -->
+<!-- #   guides(fill = "none") + -->
+<!-- #   geom_text(data = data_labels, ggplot2::aes( -->
+<!-- #     x = x, y = y, -->
+<!-- #     label = scales::number(estadosGanancias$profit, scale = 1e-2, accuracy = 1) -->
+<!-- #   ), color = "white")+ -->
+<!-- #   labs(title="Profit by state, in $K") -->
+<!-- #  -->
+<!-- # ``` -->
+row
+---------------------
 
-d   <- usmapdata::centroid_labels("states")
-colnames(d)[5] <- "state"
-d <- d[c(-2,-12),]
+```{r}
 
-data_labels <- merge(d, estadosGanancias, by = "state")
-
-plot_usmap(data = estadosGanancias, values = "profit", color = "white", labels = FALSE) +
-  guides(fill = "none") +
-  geom_text(data = data_labels, ggplot2::aes(
-    x = x, y = y,
-    label = scales::number(estadosGanancias$profit, scale = 1e-2, accuracy = 1)
-  ), color = "white")+
-  labs(title="Profit by state, in $K")
+filter_slider("profit", "Profit", sd, column=~profit, width=750)
 
 ```
+
+
+
+row
+----------------------
+
+```{r}
+
+bscols(
+  leaflet(sd) %>% addTiles() %>% addMarkers(),
+  datatable(sd, extensions="Scroller", style="bootstrap", class="compact", width="100%",
+    options=list(deferRender=TRUE, scrollY=300, scroller=TRUE))
+)
+
+```
+
+
+
 
 
 # Shipments {data-icon='fa-truck'}
 
 
-<!-- row  -->
-<!-- ------------------- -->
+row
+-------------------
 
-<!-- ### Standard Class % of total ships -->
+### Standard Class % of total ships
 
-<!-- ```{r} -->
+```{r}
 
-<!-- standardClass <- data %>% -->
-<!--                   select(ship_mode, row_id) %>% -->
-<!--                   filter(ship_mode == "Standard Class") %>% -->
-<!--                   group_by(ship_mode) %>% -->
-<!--                   summarise(cantidad = n()) %>% -->
-<!--                   arrange(desc(cantidad)) %>% -->
-<!--                   mutate(ratio = (cantidad*100)/9994) -->
+standardClass <- data %>%
+                  select(ship_mode, row_id) %>%
+                  filter(ship_mode == "Standard Class") %>%
+                  group_by(ship_mode) %>%
+                  summarise(cantidad = n()) %>%
+                  arrange(desc(cantidad)) %>%
+                  mutate(ratio = (cantidad*100)/9994)
 
-<!-- standardClass$ratio <- round(standardClass$ratio,2) -->
-<!-- gauge(standardClass$ratio,min=0,max=100,symbol='%', -->
-<!--       gaugeSectors(success=c(80,100), -->
-<!--                    warning = c(40,79), -->
-<!--                    danger =c(0,39))) -->
+standardClass$ratio <- round(standardClass$ratio,2)
+gauge(standardClass$ratio,min=0,max=100,symbol='%',
+      gaugeSectors(success=c(80,100),
+                   warning = c(40,79),
+                   danger =c(0,39)))
 
-<!-- ``` -->
+```
 
-<!-- ### Second Class % of total ships -->
+### Second Class % of total ships
 
-<!-- ```{r} -->
+```{r}
 
-<!-- secondClass <- data %>% -->
-<!--                 select(ship_mode, row_id) %>% -->
-<!--                 filter(ship_mode == "Second Class") %>% -->
-<!--                 group_by(ship_mode) %>% -->
-<!--                 summarise(cantidad = n()) %>% -->
-<!--                 arrange(desc(cantidad)) %>% -->
-<!--                 mutate(ratio = (cantidad*100)/9994) -->
+secondClass <- data %>%
+                select(ship_mode, row_id) %>%
+                filter(ship_mode == "Second Class") %>%
+                group_by(ship_mode) %>%
+                summarise(cantidad = n()) %>%
+                arrange(desc(cantidad)) %>%
+                mutate(ratio = (cantidad*100)/9994)
 
-<!-- secondClass$ratio <- round(secondClass$ratio,2) -->
-<!-- gauge(secondClass$ratio,min=0,max=100,symbol='%', -->
-<!--       gaugeSectors(success=c(80,100), -->
-<!--                    warning = c(40,79), -->
-<!--                    danger =c(0,39))) -->
+secondClass$ratio <- round(secondClass$ratio,2)
+gauge(secondClass$ratio,min=0,max=100,symbol='%',
+      gaugeSectors(success=c(80,100),
+                   warning = c(40,79),
+                   danger =c(0,39)))
 
-<!-- ``` -->
-
-
-<!-- ### First Class % of total ships -->
-
-<!-- ```{r} -->
-
-<!-- firstClass <- data %>% -->
-<!--                 select(ship_mode, row_id) %>% -->
-<!--                 filter(ship_mode == "First Class") %>% -->
-<!--                 group_by(ship_mode) %>% -->
-<!--                 summarise(cantidad = n()) %>% -->
-<!--                 arrange(desc(cantidad)) %>% -->
-<!--                 mutate(ratio = (cantidad*100)/9994) -->
-
-<!-- firstClass$ratio <- round(firstClass$ratio,2) -->
-<!-- gauge(firstClass$ratio,min=0,max=100,symbol='%', -->
-<!--       gaugeSectors(success=c(80,100), -->
-<!--                    warning = c(40,79), -->
-<!--                    danger =c(0,39))) -->
-
-<!-- ``` -->
+```
 
 
-<!-- row -->
-<!-- --------------------- -->
+### First Class % of total ships
 
-<!-- ### -->
+```{r}
 
-<!-- ### Same Day % of total ships -->
+firstClass <- data %>%
+                select(ship_mode, row_id) %>%
+                filter(ship_mode == "First Class") %>%
+                group_by(ship_mode) %>%
+                summarise(cantidad = n()) %>%
+                arrange(desc(cantidad)) %>%
+                mutate(ratio = (cantidad*100)/9994)
 
-<!-- ```{r} -->
+firstClass$ratio <- round(firstClass$ratio,2)
+gauge(firstClass$ratio,min=0,max=100,symbol='%',
+      gaugeSectors(success=c(80,100),
+                   warning = c(40,79),
+                   danger =c(0,39)))
 
-<!-- sameDay <- data %>% -->
-<!--             select(ship_mode, row_id) %>% -->
-<!--             filter(ship_mode == "Same Day") %>% -->
-<!--             group_by(ship_mode) %>% -->
-<!--             summarise(cantidad = n()) %>% -->
-<!--             arrange(desc(cantidad)) %>% -->
-<!--             mutate(ratio = (cantidad*100)/9994) -->
-
-<!-- sameDay$ratio <- round(sameDay$ratio,2) -->
-<!-- gauge(sameDay$ratio,min=0,max=100,symbol='%', -->
-<!--       gaugeSectors(success=c(80,100), -->
-<!--                    warning = c(40,79), -->
-<!--                    danger =c(0,39))) -->
-
-<!-- ``` -->
+```
 
 
-<!-- ### -->
+row
+---------------------
+
+###
+
+### Same Day % of total ships
+
+```{r}
+
+sameDay <- data %>%
+            select(ship_mode, row_id) %>%
+            filter(ship_mode == "Same Day") %>%
+            group_by(ship_mode) %>%
+            summarise(cantidad = n()) %>%
+            arrange(desc(cantidad)) %>%
+            mutate(ratio = (cantidad*100)/9994)
+
+sameDay$ratio <- round(sameDay$ratio,2)
+gauge(sameDay$ratio,min=0,max=100,symbol='%',
+      gaugeSectors(success=c(80,100),
+                   warning = c(40,79),
+                   danger =c(0,39)))
+
+```
+
+
+###
 
 row
 ----------------------
@@ -358,43 +397,6 @@ data %>%
 ```
 
 
-row
----------------------------------
 
-###
-
-```{r}
-
-sd <- data %>%
-      select(segment, ship_mode, row_id) %>%
-      group_by(segment, ship_mode) %>%
-      summarise(cantidad_envios = n()) %>%
-      SharedData$new()
-
-fig <- sd %>%
-  plotly::plot_ly(x= ~ship_mode, 
-                  y = ~cantidad_envios,
-                  name = "prueba", 
-                  type="bar",
-                  hoverinfo = "text",
-                  text = ~paste("Segment: ", segment,
-                                "No.: ", cantidad_envios)
-                  ) %>%
-  layout(xaxis = list(title = "Ship Mode"),
-         yaxis = list(title = "Number of shipments"))
-
-
-
-bscols(widths = c(3,9),
-       list(
-         crosstalk::filter_select(id = "select_filter", 
-                                  label = "Segments",
-                                  sharedData = sd,
-                                  group = ~segment)
-       ),fig
-       )
-
-
-```
 
 
